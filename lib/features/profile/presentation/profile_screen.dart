@@ -10,6 +10,8 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../paw_points/presentation/points_providers.dart';
+import '../../notifications/presentation/notification_providers.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -18,9 +20,10 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final petsAsync = ref.watch(realPetsProvider);
     final petIndex = ref.watch(selectedPetIndexProvider);
-    final points = ref.watch(pawPointsProvider);
+    final points = ref.watch(pointsBalanceProvider);
     final cartCount = ref.watch(cartItemCountProvider);
     final profileAsync = ref.watch(userProfileProvider);
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -154,10 +157,11 @@ class ProfileScreen extends ConsumerWidget {
                 onTap: () => context.push(R.orders)),
             _menuTile(LucideIcons.heart, 'Wishlist',
                 onTap: () => context.push(R.wishlist)),
-            _menuTile(LucideIcons.mapPin, 'Addresses', onTap: () {}),
+            _menuTile(LucideIcons.mapPin, 'Addresses',
+                onTap: () => context.push(R.addresses)),
             _menuTile(LucideIcons.creditCard, 'Payment methods', onTap: () {}),
             _menuTile(LucideIcons.bell, 'Notifications',
-                trailingTag: '3 new',
+                trailingTag: unreadCount > 0 ? '$unreadCount new' : null,
                 onTap: () => context.push(R.notifications)),
             _menuTile(LucideIcons.messageCircle, 'Help & live chat',
                 onTap: () => context.push(R.liveChat)),

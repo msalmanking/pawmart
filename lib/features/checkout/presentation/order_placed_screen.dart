@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../presentation/checkout_providers.dart';
 
-import '../../core/router/app_router.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_theme.dart';
-import '../../core/widgets/common_widgets.dart';
+import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/common_widgets.dart';
 
 class OrderPlacedScreen extends ConsumerStatefulWidget {
   const OrderPlacedScreen({super.key});
@@ -80,24 +81,33 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen>
                               textAlign: TextAlign.center,
                               style: AppText.heading(size: 30)),
                           const SizedBox(height: 10),
-                          Text.rich(
-                            TextSpan(
-                                style: AppText.body(
-                                    size: 14.5,
-                                    color: AppColors.neutral700,
-                                    height: 1.6),
-                                children: const [
-                                  TextSpan(text: 'Order '),
-                                  TextSpan(
-                                      text: '#PM-84291',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.text)),
-                                  TextSpan(
-                                      text:
-                                          ' is confirmed.\nArriving tomorrow, 9 am – 1 pm.'),
-                                ]),
-                            textAlign: TextAlign.center,
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final ordersAsync = ref.watch(myOrdersProvider);
+                              final orderNumber =
+                                  ordersAsync.value?.isNotEmpty == true
+                                      ? ordersAsync.value!.first.orderNumber
+                                      : '...';
+                              return Text.rich(
+                                TextSpan(
+                                    style: AppText.body(
+                                        size: 14.5,
+                                        color: AppColors.neutral700,
+                                        height: 1.6),
+                                    children: [
+                                      const TextSpan(text: 'Order '),
+                                      TextSpan(
+                                          text: '#$orderNumber',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.text)),
+                                      const TextSpan(
+                                          text:
+                                              ' is confirmed.\nArriving tomorrow, 9 am – 1 pm.'),
+                                    ]),
+                                textAlign: TextAlign.center,
+                              );
+                            },
                           ),
                         ],
                       ),

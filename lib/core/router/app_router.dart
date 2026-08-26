@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/splash/splash_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
@@ -11,20 +12,22 @@ import '../../features/product/product_detail_screen.dart';
 import '../../features/product/reviews_screen.dart';
 import '../../features/search/search_screen.dart';
 import '../../features/cart/presentation/cart_screen.dart';
-import '../../features/checkout/checkout_screen.dart';
-import '../../features/checkout/order_placed_screen.dart';
-import '../../features/orders/orders_screen.dart';
-import '../../features/orders/order_tracking_screen.dart';
+import '../../features/checkout/presentation/checkout_screen.dart';
+import '../../features/checkout/presentation/order_placed_screen.dart';
+import '../../features/orders/presentation/orders_screen.dart';
+import '../../features/orders/presentation/order_tracking_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/wishlist/presentation/wishlist_screen.dart';
-import '../../features/profile/notifications_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/offers/presentation/offers_screen.dart';
-import '../../features/profile/paw_points_screen.dart';
+import '../../features/paw_points/presentation/paw_points_screen.dart';
 import '../../features/profile/live_chat_screen.dart';
+import '../../features/addresses/presentation/addresses_screen.dart';
 
 /// Route names — one per screen in the reference set (01–22).
 class R {
   R._();
+
   static const splash = '/';
   static const onboarding = '/onboarding';
   static const signIn = '/sign-in';
@@ -46,10 +49,44 @@ class R {
   static const offers = '/offers';
   static const pawPoints = '/paw-points';
   static const liveChat = '/live-chat';
+  static const addresses = '/addresses';
 }
 
 final appRouter = GoRouter(
   initialLocation: R.splash,
+  redirect: (context, state) {
+    final session = Supabase.instance.client.auth.currentSession;
+    final loggedIn = session != null;
+
+    const authRoutes = [R.splash, R.onboarding, R.signIn, R.otp];
+    const protectedRoutes = [
+      R.cart,
+      R.checkout,
+      R.orderPlaced,
+      R.orders,
+      R.tracking,
+      R.profile,
+      R.wishlist,
+      R.addresses,
+      R.pawPoints,
+      R.notifications,
+    ];
+
+    final goingToAuthRoute = authRoutes.contains(state.matchedLocation);
+    final goingToProtectedRoute =
+        protectedRoutes.contains(state.matchedLocation);
+
+    if (!loggedIn && goingToProtectedRoute) {
+      return R.signIn;
+    }
+
+    if (loggedIn &&
+        (state.matchedLocation == R.signIn || state.matchedLocation == R.otp)) {
+      return R.home;
+    }
+
+    return null;
+  },
   routes: [
     GoRoute(path: R.splash, builder: (_, __) => const SplashScreen()),
     GoRoute(path: R.onboarding, builder: (_, __) => const OnboardingScreen()),
@@ -74,5 +111,6 @@ final appRouter = GoRouter(
     GoRoute(path: R.offers, builder: (_, __) => const OffersScreen()),
     GoRoute(path: R.pawPoints, builder: (_, __) => const PawPointsScreen()),
     GoRoute(path: R.liveChat, builder: (_, __) => const LiveChatScreen()),
+    GoRoute(path: R.addresses, builder: (_, __) => const AddressesScreen()),
   ],
 );

@@ -12,6 +12,7 @@ import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/common_widgets.dart';
+import '../notifications/presentation/notification_providers.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -77,34 +78,42 @@ class HomeScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () => context.push(R.notifications),
-                      child: Container(
-                        width: 44,
-                        height: 44,
-                        decoration: const BoxDecoration(
-                            color: AppColors.surface, shape: BoxShape.circle),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            const Icon(LucideIcons.bell, size: 20),
-                            Positioned(
-                              top: 9,
-                              right: 11,
-                              child: Container(
-                                width: 9,
-                                height: 9,
-                                decoration: BoxDecoration(
-                                  color: AppColors.accent,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      color: AppColors.surface, width: 2),
-                                ),
-                              ),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final unreadCount =
+                            ref.watch(unreadNotificationCountProvider);
+                        return GestureDetector(
+                          onTap: () => context.push(R.notifications),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: const BoxDecoration(
+                                color: AppColors.surface,
+                                shape: BoxShape.circle),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                const Icon(LucideIcons.bell, size: 20),
+                                if (unreadCount > 0)
+                                  Positioned(
+                                    top: 9,
+                                    right: 11,
+                                    child: Container(
+                                      width: 9,
+                                      height: 9,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accent,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: AppColors.surface, width: 2),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
