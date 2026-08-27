@@ -145,8 +145,11 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         const SizedBox(width: 8),
                       ],
-                      const AppTag(
-                          label: '+ Add pet', variant: TagVariant.outline),
+                      GestureDetector(
+                        onTap: () => _showAddPetSheet(context, ref),
+                        child: const AppTag(
+                            label: '+ Add pet', variant: TagVariant.outline),
+                      ),
                     ],
                   );
                 },
@@ -224,6 +227,92 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+void _showAddPetSheet(BuildContext context, WidgetRef ref) {
+  final nameController = TextEditingController();
+  String selectedSpecies = 'Dog';
+
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return Padding(
+            padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: AppColors.bg,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+              ),
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text('Add a pet', style: AppText.heading(size: 22)),
+                  const SizedBox(height: 16),
+                  Text('Name',
+                      style:
+                          AppText.body(size: 12, color: AppColors.neutral600)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      hintText: 'e.g. Buddy',
+                      filled: true,
+                      fillColor: AppColors.surface,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Species',
+                      style:
+                          AppText.body(size: 12, color: AppColors.neutral600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final s in ['Dog', 'Cat', 'Bird', 'Fish', 'Other'])
+                        GestureDetector(
+                          onTap: () => setState(() => selectedSpecies = s),
+                          child: AppTag(
+                            label: s,
+                            variant: selectedSpecies == s
+                                ? TagVariant.accent
+                                : TagVariant.neutral,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  PillButton(
+                    label: 'Add pet',
+                    height: 52,
+                    onTap: () async {
+                      final name = nameController.text.trim();
+                      if (name.isEmpty) return;
+                      await addPet(ref, name: name, species: selectedSpecies);
+                      if (context.mounted) Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
 }
 
 void _showEditProfileSheet(

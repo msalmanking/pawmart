@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../catalog/presentation/catalog_providers.dart';
-import '../cart/presentation/cart_providers.dart';
-import '../wishlist/presentation/wishlist_providers.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_theme.dart';
-import '../../core/widgets/common_widgets.dart';
-import 'domain/product.dart';
+import '../../catalog/presentation/catalog_providers.dart';
+import '../../cart/presentation/cart_providers.dart';
+import '../../wishlist/presentation/wishlist_providers.dart';
+import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/common_widgets.dart';
+import '../domain/product.dart';
+import 'reviews_providers.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   const ProductDetailScreen({super.key});
@@ -184,6 +186,43 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               AppColors.accent800),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 16),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final summaryAsync =
+                            ref.watch(productRatingSummaryProvider(product.id));
+                        return GestureDetector(
+                          onTap: () {
+                            ref.read(selectedProductIdProvider.notifier).state =
+                                product.id;
+                            context.push(R.reviews);
+                          },
+                          child: summaryAsync.when(
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                            data: (summary) => Row(
+                              children: [
+                                const Icon(LucideIcons.star,
+                                    size: 16, color: AppColors.accent),
+                                const SizedBox(width: 6),
+                                Text(
+                                  summary.total == 0
+                                      ? 'No reviews yet'
+                                      : '${summary.average.toStringAsFixed(1)} · ${summary.total} reviews',
+                                  style: AppText.body(
+                                      size: 13,
+                                      weight: FontWeight.w600,
+                                      color: AppColors.neutral700),
+                                ),
+                                const SizedBox(width: 6),
+                                const Icon(LucideIcons.chevronRight,
+                                    size: 15, color: AppColors.neutral500),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
