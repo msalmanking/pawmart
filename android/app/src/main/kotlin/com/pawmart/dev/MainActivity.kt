@@ -1,4 +1,4 @@
-package com.example.pawmart_app
+package com.pawmart.dev
 
 import io.flutter.embedding.android.FlutterActivity
 

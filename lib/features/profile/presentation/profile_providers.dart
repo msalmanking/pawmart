@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/profile_repository.dart';
 import '../domain/user_profile.dart';
+import '../../../core/push/push_service.dart';
 
 final profileRepositoryProvider = Provider<ProfileRepository>(
   (ref) => ProfileRepository(Supabase.instance.client),
@@ -21,6 +22,7 @@ Future<void> updateProfile(WidgetRef ref,
 }
 
 Future<void> signOutUser(WidgetRef ref) async {
+  await PushService.unregisterToken();
   final repo = ref.read(profileRepositoryProvider);
   await repo.signOut();
 }

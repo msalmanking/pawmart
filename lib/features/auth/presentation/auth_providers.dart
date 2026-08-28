@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/push/push_service.dart';
 
 final phoneNumberProvider = StateProvider<String>((ref) => '');
 
 Future<void> signInAsGuest() async {
   await Supabase.instance.client.auth.signInAnonymously();
+  await PushService.syncTokenIfAlreadyAuthorized();
 }
 
 Future<void> requestPhoneLink(String phone) async {
@@ -21,6 +23,7 @@ Future<bool> verifyPhoneLink(String phone, String code) async {
       phone: phone,
       token: code,
     );
+    await PushService.syncTokenIfAlreadyAuthorized();
     return true;
   } catch (e) {
     return false;
@@ -89,6 +92,7 @@ class OtpNotifier extends StateNotifier<OtpState> {
         phone: phone,
         token: code,
       );
+      await PushService.syncTokenIfAlreadyAuthorized();
       return true;
     } catch (e) {
       setVerifying(false);

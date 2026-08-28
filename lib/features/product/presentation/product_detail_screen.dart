@@ -137,6 +137,51 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             dense: true),
                       ),
                     Text(product.nameEn, style: AppText.heading(size: 23)),
+                    const SizedBox(height: 6),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final summaryAsync =
+                            ref.watch(productRatingSummaryProvider(product.id));
+                        return GestureDetector(
+                          onTap: () {
+                            ref.read(selectedProductIdProvider.notifier).state =
+                                product.id;
+                            context.push(R.reviews);
+                          },
+                          child: summaryAsync.when(
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                            data: (summary) => summary.total == 0
+                                ? Text('No reviews yet',
+                                    style: AppText.body(
+                                        size: 13, color: AppColors.neutral600))
+                                : Row(
+                                    children: [
+                                      const Icon(LucideIcons.star,
+                                          size: 14, color: AppColors.accent),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                          '${summary.average.toStringAsFixed(1)}',
+                                          style: AppText.body(
+                                              size: 13,
+                                              weight: FontWeight.w700)),
+                                      const SizedBox(width: 4),
+                                      Text('· ${summary.total} reviews ·',
+                                          style: AppText.body(
+                                              size: 13,
+                                              color: AppColors.neutral700)),
+                                      const SizedBox(width: 4),
+                                      Text('Read all',
+                                          style: AppText.body(
+                                              size: 13,
+                                              weight: FontWeight.w700,
+                                              color: AppColors.accent)),
+                                    ],
+                                  ),
+                          ),
+                        );
+                      },
+                    ),
                     const SizedBox(height: 14),
                     Row(children: [
                       Text('AED ${product.price.toStringAsFixed(0)}',
@@ -186,43 +231,6 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               AppColors.accent800),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 16),
-                    Consumer(
-                      builder: (context, ref, _) {
-                        final summaryAsync =
-                            ref.watch(productRatingSummaryProvider(product.id));
-                        return GestureDetector(
-                          onTap: () {
-                            ref.read(selectedProductIdProvider.notifier).state =
-                                product.id;
-                            context.push(R.reviews);
-                          },
-                          child: summaryAsync.when(
-                            loading: () => const SizedBox.shrink(),
-                            error: (_, __) => const SizedBox.shrink(),
-                            data: (summary) => Row(
-                              children: [
-                                const Icon(LucideIcons.star,
-                                    size: 16, color: AppColors.accent),
-                                const SizedBox(width: 6),
-                                Text(
-                                  summary.total == 0
-                                      ? 'No reviews yet'
-                                      : '${summary.average.toStringAsFixed(1)} · ${summary.total} reviews',
-                                  style: AppText.body(
-                                      size: 13,
-                                      weight: FontWeight.w600,
-                                      color: AppColors.neutral700),
-                                ),
-                                const SizedBox(width: 6),
-                                const Icon(LucideIcons.chevronRight,
-                                    size: 15, color: AppColors.neutral500),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
                     ),
                   ],
                 ),

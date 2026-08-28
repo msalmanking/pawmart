@@ -68,13 +68,13 @@ This is a plain Flutter package (no platform folders included, to keep the deliv
 lightweight). To run:
 
 ```bash
-flutter create --project-name pawmart_app --org com.pawmart .   # generates android/ios/etc. in place
+flutter create --project-name pawmart --org com.pawmart .   # generates android/ios/etc. in place
 flutter pub get
 flutter run
 ```
 
 If `flutter create .` complains about existing files, just create a fresh
-`flutter create pawmart_app_shell`, then copy this `lib/` and `pubspec.yaml` into it.
+`flutter create pawmart_shell`, then copy this `lib/` and `pubspec.yaml` into it.
 
 ## Extending
 - Replace `PhotoPlaceholder` usages with real `Image.network`/`Image.asset` once you have

@@ -1,6 +1,6 @@
 {
-    "name": "pawmart_app",
-    "short_name": "pawmart_app",
+    "name": "pawmart",
+    "short_name": "pawmart",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
