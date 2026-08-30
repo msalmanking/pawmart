@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../presentation/checkout_providers.dart';
-import '../../orders/presentation/orders_providers.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/push/push_service.dart';
+import '../../orders/presentation/orders_providers.dart';
 
 class OrderPlacedScreen extends ConsumerStatefulWidget {
   const OrderPlacedScreen({super.key});
@@ -164,62 +164,65 @@ class _OrderPlacedScreenState extends ConsumerState<OrderPlacedScreen>
                           Consumer(
                             builder: (context, ref, _) {
                               final ordersAsync = ref.watch(myOrdersProvider);
-                              final orderNumber =
+                              final latestOrder =
                                   ordersAsync.value?.isNotEmpty == true
-                                      ? ordersAsync.value!.first.orderNumber
-                                      : '...';
-                              return Text.rich(
-                                TextSpan(
-                                    style: AppText.body(
-                                        size: 14.5,
-                                        color: AppColors.neutral700,
-                                        height: 1.6),
-                                    children: [
-                                      const TextSpan(text: 'Order '),
-                                      TextSpan(
-                                          text: '#$orderNumber',
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.w700,
-                                              color: AppColors.text)),
-                                      const TextSpan(
-                                          text:
-                                              ' is confirmed.\nArriving tomorrow, 9 am – 1 pm.'),
-                                    ]),
-                                textAlign: TextAlign.center,
+                                      ? ordersAsync.value!.first
+                                      : null;
+                              final orderNumber =
+                                  latestOrder?.orderNumber ?? '...';
+                              final earnedPoints = latestOrder != null
+                                  ? (latestOrder.total / 10).floor()
+                                  : 0;
+                              return Column(
+                                children: [
+                                  Text.rich(
+                                    TextSpan(
+                                        style: AppText.body(
+                                            size: 14.5,
+                                            color: AppColors.neutral700,
+                                            height: 1.6),
+                                        children: [
+                                          const TextSpan(text: 'Order '),
+                                          TextSpan(
+                                              text: '#$orderNumber',
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.w700,
+                                                  color: AppColors.text)),
+                                          const TextSpan(
+                                              text:
+                                                  ' is confirmed.\nArriving tomorrow, 9 am – 1 pm.'),
+                                        ]),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 18),
+                                  AppTag(
+                                      label: earnedPoints > 0
+                                          ? '+$earnedPoints Paw Points earned'
+                                          : 'Paw Points on your next order',
+                                      icon: LucideIcons.medal,
+                                      variant: TagVariant.accent2Soft),
+                                ],
                               );
                             },
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 18),
-                    FadeTransition(
-                      opacity: _textFade,
-                      child: const AppTag(
-                          label: '+23 Paw Points earned',
-                          icon: LucideIcons.medal,
-                          variant: TagVariant.accent2Soft),
-                    ),
                     const SizedBox(height: 26),
                     SizedBox(
                       width: double.infinity,
-                      child: Consumer(
-                        builder: (context, ref, _) {
-                          return PillButton(
-                            label: 'Track my order',
-                            height: 52,
-                            onTap: () async {
-                              final orders =
-                                  await ref.read(myOrdersListProvider.future);
-                              if (orders.isNotEmpty) {
-                                ref
-                                    .read(selectedOrderIdProvider.notifier)
-                                    .state = orders.first.id;
-                              }
-                              if (context.mounted)
-                                context.pushReplacement(R.tracking);
-                            },
-                          );
+                      child: PillButton(
+                        label: 'Track my order',
+                        height: 52,
+                        onTap: () async {
+                          final orders =
+                              await ref.read(myOrdersProvider.future);
+                          if (orders.isNotEmpty) {
+                            ref.read(selectedOrderIdProvider.notifier).state =
+                                orders.first.id;
+                          }
+                          if (context.mounted)
+                            context.pushReplacement(R.tracking);
                         },
                       ),
                     ),

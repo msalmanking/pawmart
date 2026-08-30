@@ -60,6 +60,19 @@ class CheckoutRepository {
       'note': 'Order placed (Cash on Delivery)',
     });
 
+    // Award Paw Points: 1 point per AED 10 spent (runbook earning rule).
+    // Client-side for now, same simplification as the rest of checkout
+    // until this moves to a server-side Edge Function.
+    final earnedPoints = (total / 10).floor();
+    if (earnedPoints > 0) {
+      await _client.from('points_ledger').insert({
+        'user_id': userId,
+        'delta': earnedPoints,
+        'reason': 'order',
+        'order_id': order.id,
+      });
+    }
+
     // Clear the cart.
     final cart = await _client
         .from('carts')

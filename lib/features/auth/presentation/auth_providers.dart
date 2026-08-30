@@ -1,13 +1,47 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/push/push_service.dart';
+import '../../../core/config/env.dart';
 
 final phoneNumberProvider = StateProvider<String>((ref) => '');
 
 Future<void> signInAsGuest() async {
   await Supabase.instance.client.auth.signInAnonymously();
   await PushService.syncTokenIfAlreadyAuthorized();
+}
+
+/// Returns true on success, false if the user cancelled or it failed.
+/// NOTE: unlike the phone-OTP path, this does not currently merge into an
+/// existing guest (anonymous) session — signing in with Google starts a
+/// session under the Google-linked account. Merging guest-cart history
+/// into a Google sign-in would need Supabase's identity-linking flow,
+/// which is a separate piece of work from just getting Google auth
+/// working.
+Future<bool> signInWithGoogle() async {
+  try {
+    final googleSignIn = GoogleSignIn(
+      serverClientId: Env.googleWebClientId,
+    );
+    final googleUser = await googleSignIn.signIn();
+    if (googleUser == null) return false; // user cancelled the picker
+
+    final googleAuth = await googleUser.authentication;
+    final idToken = googleAuth.idToken;
+    if (idToken == null) return false;
+
+    await Supabase.instance.client.auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+      accessToken: googleAuth.accessToken,
+    );
+
+    await PushService.syncTokenIfAlreadyAuthorized();
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 Future<void> requestPhoneLink(String phone) async {

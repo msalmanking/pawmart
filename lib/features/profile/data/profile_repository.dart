@@ -22,12 +22,15 @@ class ProfileRepository {
     final userId = _userId;
     if (userId == null) throw Exception('Login required');
 
-    final updates = <String, dynamic>{};
+    final updates = <String, dynamic>{'id': userId};
     if (fullName != null) updates['full_name'] = fullName;
     if (phone != null) updates['phone'] = phone;
 
-    if (updates.isEmpty) return;
-    await _client.from('profiles').update(updates).eq('id', userId);
+    // upsert, not update: an account that signed in via Google/guest and
+    // has never had a `profiles` row yet (no row-creation trigger has
+    // fired for it) would otherwise have this UPDATE silently affect 0
+    // rows — no error, but nothing saved either.
+    await _client.from('profiles').upsert(updates);
   }
 
   Future<void> signOut() async {

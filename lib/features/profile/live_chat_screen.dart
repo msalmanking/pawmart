@@ -22,7 +22,7 @@ class _LiveChatScreenState extends State<LiveChatScreen>
 
   // TODO: replace with the client's real WhatsApp Business number
   // (country code, no + or spaces, e.g. 971501234567)
-  static const _whatsappNumber = '971501234567';
+  static const _whatsappNumber = '03439302580';
 
   Future<void> _openWhatsApp(String message) async {
     final encoded = Uri.encodeComponent(message);

@@ -19,6 +19,7 @@ class SignInScreen extends ConsumerStatefulWidget {
 class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _phoneController = TextEditingController();
   bool _sending = false;
+  bool _googleLoading = false;
 
   Future<void> _continue() async {
     final rawPhone = _phoneController.text.trim().replaceAll(' ', '');
@@ -50,6 +51,30 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             .showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
+  }
+
+  Future<void> _google() async {
+    setState(() => _googleLoading = true);
+    final success = await signInWithGoogle();
+    if (!mounted) return;
+    setState(() => _googleLoading = false);
+    if (success) {
+      context.go(R.home);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Google sign-in was cancelled or failed.')),
+      );
+    }
+  }
+
+  void _appleComingSoon() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+            'Apple Sign-In needs a paid Apple Developer account — coming once that\'s set up.'),
+      ),
+    );
   }
 
   @override
@@ -168,16 +193,18 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     ),
                     const SizedBox(height: 16),
                     PillButton(
-                        label: 'Continue with Google',
+                        label: _googleLoading
+                            ? 'Signing in...'
+                            : 'Continue with Google',
                         variant: PillVariant.secondary,
                         height: 50,
-                        onTap: () => context.go(R.home)),
+                        onTap: _googleLoading ? null : _google),
                     const SizedBox(height: 10),
                     PillButton(
                         label: 'Continue with Apple',
                         variant: PillVariant.secondary,
                         height: 50,
-                        onTap: () => context.go(R.home)),
+                        onTap: _appleComingSoon),
                     const SizedBox(height: 22),
                     Center(
                       child: TextButton(

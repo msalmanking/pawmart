@@ -150,6 +150,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           final subtotal = items.fold<double>(0, (sum, i) => sum + i.lineTotal);
           const deliveryFee = 0.0;
           final total = subtotal + deliveryFee;
+          final hasAddress = addressesAsync.valueOrNull?.isNotEmpty ?? false;
 
           return Container(
             padding: EdgeInsets.fromLTRB(
@@ -173,11 +174,23 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     label: _placing ? 'Placing order…' : 'Place order',
                     icon: LucideIcons.lock,
                     height: 54,
-                    enabled: !_placing && payment == 2,
+                    enabled: !_placing && payment == 2 && hasAddress,
                     onTap: () => _placeOrder(items),
                   ),
                 ),
-                if (payment != 2)
+                if (!hasAddress)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: GestureDetector(
+                      onTap: () => context.push(R.addresses),
+                      child: Text('Add a delivery address to continue',
+                          style: AppText.body(
+                              size: 11.5,
+                              weight: FontWeight.w600,
+                              color: AppColors.accent)),
+                    ),
+                  )
+                else if (payment != 2)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text('Only Cash on delivery is available right now',
@@ -195,18 +208,28 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   Future<void> _placeOrder(List items) async {
     if (_placing) return;
+
+    final addresses = await ref.read(addressesProvider.future);
+    if (addresses.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Please add a delivery address before placing your order.'),
+              backgroundColor: Colors.red),
+        );
+      }
+      return;
+    }
+
     setState(() => _placing = true);
 
     try {
-      final addresses = await ref.read(addressesProvider.future);
-      Map<String, dynamic>? snapshot;
-      if (addresses.isNotEmpty) {
-        final a = addresses.first;
-        snapshot = {
-          'label': a.label,
-          'formatted': a.formatted,
-        };
-      }
+      final a = addresses.first;
+      final snapshot = {
+        'label': a.label,
+        'formatted': a.formatted,
+      };
 
       await placeOrder(ref, items.cast(), addressSnapshot: snapshot);
 

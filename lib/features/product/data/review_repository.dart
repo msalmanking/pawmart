@@ -7,7 +7,7 @@ class ReviewRepository {
 
   String? get _userId => _client.auth.currentUser?.id;
 
-  Future<List<Review>> fetchByProduct(String productId) async {
+  Future<List<Review>> fetchForProduct(String productId) async {
     final data = await _client
         .from('reviews')
         .select()
@@ -19,7 +19,7 @@ class ReviewRepository {
         .toList();
   }
 
-  Future<bool> hasOrdered(String productId) async {
+  Future<bool> hasPurchased(String productId) async {
     final userId = _userId;
     if (userId == null) return false;
 
@@ -44,26 +44,27 @@ class ReviewRepository {
     return existing != null;
   }
 
-  Future<bool> canReview(String productId) async {
-    final results = await Future.wait([
-      hasOrdered(productId),
-      hasReviewed(productId),
-    ]);
-    final ordered = results[0];
-    final reviewed = results[1];
-    return ordered && !reviewed;
-  }
-
-  Future<void> submitReview(
-      {required String productId, required int rating, String? body}) async {
+  Future<void> submitReview({
+    required String productId,
+    required int rating,
+    required String body,
+  }) async {
     final userId = _userId;
     if (userId == null) throw Exception('Login required');
+
     await _client.from('reviews').insert({
       'product_id': productId,
       'user_id': userId,
       'rating': rating,
       'body': body,
       'is_verified': true,
+    });
+
+    // Award 5 Paw Points for writing a review (per runbook earning rules).
+    await _client.from('points_ledger').insert({
+      'user_id': userId,
+      'delta': 5,
+      'reason': 'Product review',
     });
   }
 

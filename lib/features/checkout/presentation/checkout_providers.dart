@@ -5,6 +5,7 @@ import '../../cart/domain/cart_item.dart';
 import '../data/checkout_repository.dart';
 import '../domain/order.dart';
 import '../../orders/presentation/orders_providers.dart';
+import '../../paw_points/presentation/points_providers.dart';
 
 final checkoutRepositoryProvider = Provider<CheckoutRepository>(
   (ref) => CheckoutRepository(Supabase.instance.client),
@@ -22,5 +23,6 @@ Future<Order> placeOrder(WidgetRef ref, List<CartLineItem> items,
       await repo.placeOrder(items: items, addressSnapshot: addressSnapshot);
   ref.invalidate(cartLineItemsProvider);
   ref.invalidate(myOrdersListProvider);
+  ref.invalidate(pointsHistoryProvider);
   return order;
 }
